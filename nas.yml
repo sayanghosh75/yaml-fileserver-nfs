@@ -1,0 +1,65 @@
+---
+
+- name: Setup a NAS server with NFS and SMB support
+  hosts: AWS_Servers
+  vars:
+    packages:
+      - rpcbind
+      - nfs-common
+      - nfs-kernel-server
+      - firewalld
+
+  tasks:
+
+    - name: Check necessary packages are present
+      yum:
+        name: "{{ packages }}"
+        state: present
+
+    - name: Create group for NAS folder(s)
+      group:
+        name: nasadmins
+        state: present
+
+    - name: Create user for NAS folder(s)
+      user:
+        name: nasuser
+        create_home: no
+        password: "{{ 'nasuser' | password_hash('sha512') }}"
+        group: nasadmins
+
+#Change the path below to appropriate path
+#Update the owner and group appropriately
+#This is done for the particular machine this is targetted for
+    - name: Create the directory for the NFS mount
+      file:
+        path: /nasfolder
+        state: directory
+        owner: nasuser
+        group: nasadmins
+        mode: 0755
+
+#Can be changed to using a jinja template for the exports file
+#Assuming that /etc/exports exists
+#"insecure" mode configured for using ports > 1024
+    - name: Grant NFS share to client systems
+      lineinfile:
+        line: "/nasfolder *(rw,sync,root_squash,no_subtree_check,insecure)"
+        path: /etc/exports
+        state: present
+
+    - name: Enable rpcbind, nfs services
+      service:
+        name: "{{ item }}"
+        enabled: true
+      with_items:
+        - rpcbind
+        - nfs-kernel-server
+
+    - name: Reload the NFS service and Export the shared filesystems
+      shell: systemctl restart nfs-kernel-server;exportfs -a
+
+    - name: Setup firewall and rules for NFS
+      include_tasks: nfs-firewall-setup.yml
+
+...        

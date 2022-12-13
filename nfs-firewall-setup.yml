@@ -1,0 +1,70 @@
+---
+- name: firewalld is started
+  service:
+    name: firewalld
+    state: started
+    enabled: true
+
+#- name: Allow port 2049 tcp for NFS4
+#  firewalld:
+#    port: 2049/tcp
+#    state: disabled
+#    immediate: true
+#    permanent: true
+
+#- name: Allow port 2049 udp for NFS for v3
+#  firewalld:
+#    port: 2049/udp
+#    state: disabled
+#    immediate: true
+#    permanent: true
+
+#This can be a security risk for too many ports opend
+#Configure "secure" mode for nfs to use ports < 1024
+#Not required for NFS4
+#- name: Allow ports 32768 to 65535 tcp for NFS RPC
+#  firewalld:
+#    port: 32768-65535/tcp
+#    state: disabled
+#    immediate: true
+#    permanent: true
+
+#- name: Allow port 111 tcp for rpc-bind
+#  firewalld:
+#    port: 111/tcp
+#    state: disabled
+#    immediate: true
+#    permanent: true
+
+#- name: Allow port 111 udp for NFS v3
+#  firewalld:
+#    port: 111/udp
+#    state: disabled
+#    immediate: true
+#    permanent: true
+
+#Use 2049 above if nfs is not identified
+#- name: Allow NFS service
+#  firewalld:
+#    service: nfs 
+#    state: enabled
+#    immediate: true
+#    permanent: true
+
+- name: Allow rpc bind service
+  firewalld:
+    service: rpc-bind
+    state: enabled
+    immediate: true
+    permanent: true
+
+#mountd not required for NFS4
+#- name: Allow mountd service
+#  firewalld:
+#    service: mountd
+#    state: disabled
+#    immediate: true
+#    permanent: true
+
+...        
+
